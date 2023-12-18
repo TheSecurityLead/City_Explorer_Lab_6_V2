@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import './CityExplorer.css'; // Import your CSS file
 
 const CityExplorer = () => {
   const [cityName, setCityName] = useState('');
   const [locationData, setLocationData] = useState(null);
+  const [mapImage, setMapImage] = useState('');
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     setCityName(e.target.value);
@@ -11,33 +14,62 @@ const CityExplorer = () => {
 
   const exploreCity = async () => {
     try {
+      // Reset error state
+      setError(null);
+
       const response = await axios.get(
         'https://us1.locationiq.com/v1/search.php',
         {
           params: {
-            key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
+            key: import.meta.env.VITE_REACT_APP_LOCATIONIQ_API_KEY,
             q: cityName,
             format: 'json',
           },
         }
       );
 
-      
       const firstLocation = response.data[0];
 
-      
       setLocationData({
         displayName: firstLocation.display_name,
         latitude: firstLocation.lat,
         longitude: firstLocation.lon,
       });
+
+      // Fetch map image
+      const mapResponse = await axios.get(
+        'https://maps.locationiq.com/v3/staticmap',
+        {
+          params: {
+            key: import.meta.env.VITE_MAP_API_KEY,
+            center: `${firstLocation.lat},${firstLocation.lon}`,
+            zoom: 12,
+            format: 'png',
+          },
+        }
+      );
+
+      setMapImage(mapResponse.config.url); // Set the map image URL
     } catch (error) {
       console.error('Error exploring city:', error);
+
+      // Handle API error
+      if (error.response) {
+        setError({
+          statusCode: error.response.status,
+          message: error.response.data.error || 'An error occurred.',
+        });
+      } else {
+        setError({
+          statusCode: 'Unknown',
+          message: 'An unexpected error occurred.',
+        });
+      }
     }
   };
 
   return (
-    <div>
+    <div className="city-explorer-container">
       <form>
         <label>
           Enter City Name:
@@ -48,8 +80,14 @@ const CityExplorer = () => {
         </button>
       </form>
 
+      {error && (
+        <div className="error-alert">
+          <strong>Error:</strong> {error.statusCode} - {error.message}
+        </div>
+      )}
+
       {locationData && (
-        <div>
+        <div className="location-info">
           <h2>Location Information</h2>
           <p>
             <strong>City:</strong> {locationData.displayName}
@@ -60,6 +98,13 @@ const CityExplorer = () => {
           <p>
             <strong>Longitude:</strong> {locationData.longitude}
           </p>
+        </div>
+      )}
+
+      {mapImage && (
+        <div className="map-container">
+          <h2>City Map</h2>
+          <img src={mapImage} alt="City Map" />
         </div>
       )}
     </div>
