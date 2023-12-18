@@ -1,35 +1,114 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import axios from 'axios';
+import './CityExplorer.css'; // Import your CSS file
 
-function App() {
-  const [count, setCount] = useState(0)
+const CityExplorer = () => {
+  const [cityName, setCityName] = useState('');
+  const [locationData, setLocationData] = useState(null);
+  const [mapImage, setMapImage] = useState('');
+  const [error, setError] = useState(null);
+
+  const handleInputChange = (e) => {
+    setCityName(e.target.value);
+  };
+
+  const exploreCity = async () => {
+    try {
+      // Reset error state
+      setError(null);
+
+      const response = await axios.get(
+        'https://us1.locationiq.com/v1/search.php',
+        {
+          params: {
+            key: import.meta.env.VITE_REACT_APP_LOCATIONIQ_API_KEY,
+            q: cityName,
+            format: 'json',
+          },
+        }
+      );
+
+      const firstLocation = response.data[0];
+
+      setLocationData({
+        displayName: firstLocation.display_name,
+        latitude: firstLocation.lat,
+        longitude: firstLocation.lon,
+      });
+
+      // Fetch map image
+      const mapResponse = await axios.get(
+        'https://maps.locationiq.com/v3/staticmap',
+        {
+          params: {
+            key: import.meta.env.VITE_MAP_API_KEY,
+            center: `${firstLocation.lat},${firstLocation.lon}`,
+            zoom: 12,
+            format: 'png',
+          },
+        }
+      );
+
+      setMapImage(mapResponse.config.url); // Set the map image URL
+    } catch (error) {
+      console.error('Error exploring city:', error);
+
+      // Handle API error
+      if (error.response) {
+        setError({
+          statusCode: error.response.status,
+          message: error.response.data.error || 'An error occurred.',
+        });
+      } else {
+        setError({
+          statusCode: 'Unknown',
+          message: 'An unexpected error occurred.',
+        });
+      }
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="city-explorer-container">
+      <form>
+        <label>
+          Enter City Name:
+          <input type="text" value={cityName} onChange={handleInputChange} />
+        </label>
+        <button type="button" onClick={exploreCity}>
+          Explore!
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      </form>
 
-export default App
+      {error && (
+        <div className="error-alert">
+          <strong>Error:</strong> {error.statusCode} - {error.message}
+        </div>
+      )}
+
+      {locationData && (
+        <div className="location-info">
+          <h2>Location Information</h2>
+          <p>
+            <strong>City:</strong> {locationData.displayName}
+          </p>
+          <p>
+            <strong>Latitude:</strong> {locationData.latitude}
+          </p>
+          <p>
+            <strong>Longitude:</strong> {locationData.longitude}
+          </p>
+        </div>
+      )}
+
+      {mapImage && (
+        <div className="map-container">
+          <h2>City Map</h2>
+          <img src={mapImage} alt="City Map" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CityExplorer;
