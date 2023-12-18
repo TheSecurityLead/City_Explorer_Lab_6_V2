@@ -1,35 +1,69 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import axios from 'axios';
 
-function App() {
-  const [count, setCount] = useState(0)
+const CityExplorer = () => {
+  const [cityName, setCityName] = useState('');
+  const [locationData, setLocationData] = useState(null);
+
+  const handleInputChange = (e) => {
+    setCityName(e.target.value);
+  };
+
+  const exploreCity = async () => {
+    try {
+      const response = await axios.get(
+        'https://us1.locationiq.com/v1/search.php',
+        {
+          params: {
+            key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
+            q: cityName,
+            format: 'json',
+          },
+        }
+      );
+
+      
+      const firstLocation = response.data[0];
+
+      
+      setLocationData({
+        displayName: firstLocation.display_name,
+        latitude: firstLocation.lat,
+        longitude: firstLocation.lon,
+      });
+    } catch (error) {
+      console.error('Error exploring city:', error);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div>
+      <form>
+        <label>
+          Enter City Name:
+          <input type="text" value={cityName} onChange={handleInputChange} />
+        </label>
+        <button type="button" onClick={exploreCity}>
+          Explore!
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+      </form>
 
-export default App
+      {locationData && (
+        <div>
+          <h2>Location Information</h2>
+          <p>
+            <strong>City:</strong> {locationData.displayName}
+          </p>
+          <p>
+            <strong>Latitude:</strong> {locationData.latitude}
+          </p>
+          <p>
+            <strong>Longitude:</strong> {locationData.longitude}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CityExplorer;
