@@ -21,7 +21,7 @@ const CityExplorer = () => {
         'https://us1.locationiq.com/v1/search.php',
         {
           params: {
-            key: import.meta.env.VITE_REACT_APP_LOCATIONIQ_API_KEY,
+            key: process.env.REACT_APP_LOCATIONIQ_API_KEY,
             q: cityName,
             format: 'json',
           },
@@ -41,7 +41,7 @@ const CityExplorer = () => {
         'https://maps.locationiq.com/v3/staticmap',
         {
           params: {
-            key: import.meta.env.VITE_MAP_API_KEY,
+            key: process.env.REACT_APP_MAP_API_KEY,
             center: `${firstLocation.lat},${firstLocation.lon}`,
             zoom: 12,
             format: 'png',
