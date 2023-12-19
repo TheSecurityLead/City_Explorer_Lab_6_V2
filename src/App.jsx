@@ -49,7 +49,7 @@ const CityExplorer = () => {
       //   }
       // );
 
-const mapUrl = `http://maps.locationiq.com/v3/staticmap?key=pk.d412df6ffd1d3aaabcda549b559fe485&center=${firstLocation.lat},${firstLocation.lon}`
+const mapUrl = `https://maps.locationiq.com/v3/staticmap?key=pk.d412df6ffd1d3aaabcda549b559fe485&center=${firstLocation.lat},${firstLocation.lon}`
 
       setMapImage(mapUrl); // Set the map image URL
     } catch (error) {
