@@ -37,19 +37,21 @@ const CityExplorer = () => {
       });
 
       // Fetch map image
-      const mapResponse = await axios.get(
-        'https://maps.locationiq.com/v3/staticmap',
-        {
-          params: {
-            key: 'pk.d412df6ffd1d3aaabcda549b559fe485',
-            center: `${firstLocation.lat},${firstLocation.lon}`,
-            zoom: 12,
-            format: 'png',
-          },
-        }
-      );
+      // const mapResponse = await axios.get(
+      //   'https://maps.locationiq.com/v3/staticmap',
+      //   {
+      //     params: {
+      //       key: 'pk.d412df6ffd1d3aaabcda549b559fe485',
+      //       center: `${firstLocation.lat},${firstLocation.lon}`,
+      //       zoom: 12,
+      //       format: 'png',
+      //     },
+      //   }
+      // );
 
-      setMapImage(mapResponse.config.url); // Set the map image URL
+const mapUrl = `http://maps.locationiq.com/v3/staticmap?key=pk.d412df6ffd1d3aaabcda549b559fe485&center=${firstLocation.lat},${firstLocation.lon}`
+
+      setMapImage(mapUrl); // Set the map image URL
     } catch (error) {
       console.error('Error exploring city:', error);
 
@@ -101,12 +103,12 @@ const CityExplorer = () => {
         </div>
       )}
 
-      {mapImage && (
+       {mapImage && ( 
         <div className="map-container">
           <h2>City Map</h2>
           <img src={mapImage} alt="City Map" />
         </div>
-      )}
+      )} 
     </div>
   );
 };
